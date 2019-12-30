@@ -1,11 +1,38 @@
 // SOFT356-C2.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <windows.h>
+
 #include <iostream>
+#include <conio.h>
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+//Links the building enviroment to the libary
+#pragma comment(lib, "Ws2_32.lib")
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    std::cout << "Starting Client!" << std::endl;
+
+
+	WSADATA wsaData;
+	int iResult;
+
+	//Initialize Winsock
+	// MAKEWORD requests version 2.2 of winsock
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		std::cout << "WSAStartup failed: " << iResult << std::endl;
+
+		return 1;
+	}
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

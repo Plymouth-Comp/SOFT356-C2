@@ -50,20 +50,6 @@ int main()
 	// Resolve the local address and port to be used by the server
 	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 	if (iResult != 0) {
-		printf("getaddrinfo failed: %d\n", iResult);
-		WSACleanup();
-		return 1;
-	}
-
-
-	// Gets the host ip from the user
-	std::string hostIPAddress;
-	std::cout << "Enter host ip address: ";
-	std::cin >> hostIPAddress;
-
-	// Resolve the server address and port
-	iResult = getaddrinfo(hostIPAddress.c_str(), DEFAULT_PORT, &hints, &result);
-	if (iResult != 0) {
 		std::cout << "getaddrinfo failed: " << iResult << std::endl;
 		WSACleanup();
 		return 1;
@@ -79,6 +65,7 @@ int main()
 		WSACleanup();
 		return 1;
 	}
+
 
 	//Stops the server from 
 	_getch();

@@ -27,12 +27,13 @@ int main()
 	int iResult;
 
 	//Initialize Winsock
+	std::cout << "Initializing Winsock: ";
 	// MAKEWORD requests version 2.2 of winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		std::cout << "WSAStartup failed: " << iResult << std::endl;
 		
-		return 1;
+		//return 1;
 	}
 
 	struct addrinfo
@@ -52,23 +53,41 @@ int main()
 	if (iResult != 0) {
 		std::cout << "getaddrinfo failed: " << iResult << std::endl;
 		WSACleanup();
-		return 1;
+		//return 1;
 	}
+	std::cout << "done!" << std::endl;
 
 	// Creates the socket
+	std::cout << "Creating Socket: ";
 	SOCKET listenSocket = INVALID_SOCKET;
+
+	listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
 	// Check for errors
 	if (listenSocket == INVALID_SOCKET) {
 		std::cout << "Error at socket:" << WSAGetLastError() << std::endl;
 		freeaddrinfo(result);
 		WSACleanup();
-		return 1;
+		//return 1;
 	}
+	std::cout << "done!" << std::endl;
 
 
-	//Stops the server from 
-	_getch();
+	//Setup the TCP listening socket
+	std::cout << "Binding socket: ";
+	iResult = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		printf("bind failed with error: %d\n", WSAGetLastError());
+		freeaddrinfo(result);
+		closesocket(listenSocket);
+		WSACleanup();
+		//return 1;
+	}
+	std::cout << "done!" << std::endl;
+
+	//Stops the server from auto closing
+	std::string test;
+	std::cin >> test;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

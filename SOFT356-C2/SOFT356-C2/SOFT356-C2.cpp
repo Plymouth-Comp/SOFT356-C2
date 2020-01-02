@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#define DEFAULT_PORT "27015"
+
 #include <windows.h>
 
 #include <iostream>
@@ -20,7 +22,6 @@ int main()
 {
     std::cout << "Starting Client!" << std::endl;
 
-
 	WSADATA wsaData;
 	int iResult;
 
@@ -33,6 +34,48 @@ int main()
 		return 1;
 	}
 
+	//Creates a socket
+	// Declares an object wich contains the sockaddr and initializes the values
+	struct addrinfo
+		* result = NULL,
+		* ptr = NULL,
+		hints;
+
+	ZeroMemory(&hints, sizeof(hints));
+	//  AF_UNSPEC allows for either IPv4 or IPv6
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	// Gets the host ip from the user
+	std::string hostIPAddress;
+	std::cout << "Enter host ip address: ";
+	std::cin >> hostIPAddress;
+
+	// Resolve the server address and port
+	iResult = getaddrinfo(hostIPAddress.c_str(), DEFAULT_PORT, &hints, &result);
+	if (iResult != 0) {
+		std::cout << "getaddrinfo failed: " << iResult << std::endl;
+		WSACleanup();
+		return 1;
+	}
+
+	// Create a socket object
+	SOCKET connectSocket = INVALID_SOCKET;
+
+	// Attempt to connect to the first address returned by the call to getaddrinfo
+	ptr = result;
+
+	// Create a SOCKET for connecting to server
+	connectSocket = socket(ptr->ai_family, ptr->ai_socktype,
+		ptr->ai_protocol);
+
+	if (connectSocket == INVALID_SOCKET) {
+		printf("Error at socket(): %ld\n", WSAGetLastError());
+		freeaddrinfo(result);
+		WSACleanup();
+		return 1;
+	}
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

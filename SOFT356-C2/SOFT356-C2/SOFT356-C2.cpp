@@ -70,6 +70,7 @@ int main()
 	connectSocket = socket(ptr->ai_family, ptr->ai_socktype,
 		ptr->ai_protocol);
 
+	// Check for errors
 	if (connectSocket == INVALID_SOCKET) {
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		freeaddrinfo(result);

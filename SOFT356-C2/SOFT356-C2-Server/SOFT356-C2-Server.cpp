@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#define DEFAULT_PORT "27015"
+
 #include <windows.h>
 
 #include <iostream>
@@ -15,8 +17,6 @@
 
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
-
-
 
 int main()
 {
@@ -35,7 +35,52 @@ int main()
 		return 1;
 	}
 
+	struct addrinfo
+		*result = NULL,
+		*ptr = NULL,
+		hints;
 
+	ZeroMemory(&hints, sizeof(hints));
+	// AF_INET specifies IPv4
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	// Resolve the local address and port to be used by the server
+	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	if (iResult != 0) {
+		printf("getaddrinfo failed: %d\n", iResult);
+		WSACleanup();
+		return 1;
+	}
+
+
+	// Gets the host ip from the user
+	std::string hostIPAddress;
+	std::cout << "Enter host ip address: ";
+	std::cin >> hostIPAddress;
+
+	// Resolve the server address and port
+	iResult = getaddrinfo(hostIPAddress.c_str(), DEFAULT_PORT, &hints, &result);
+	if (iResult != 0) {
+		std::cout << "getaddrinfo failed: " << iResult << std::endl;
+		WSACleanup();
+		return 1;
+	}
+
+	// Creates the socket
+	SOCKET listenSocket = INVALID_SOCKET;
+
+	// Check for errors
+	if (listenSocket == INVALID_SOCKET) {
+		std::cout << "Error at socket:" << WSAGetLastError() << std::endl;
+		freeaddrinfo(result);
+		WSACleanup();
+		return 1;
+	}
+
+	//Stops the server from 
 	_getch();
 }
 

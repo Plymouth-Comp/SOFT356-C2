@@ -91,11 +91,25 @@ int main()
 	
 	//Listen for a connection
 	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		std::cout << "Listen failed with error:" << WSAGetLastError() << std::endl;
+		std::cout << "Listen failed with error: " << WSAGetLastError() << std::endl;
 		closesocket(listenSocket);
 		WSACleanup();
 		return 1;
 	}
+
+	SOCKET clientSocket = INVALID_SOCKET;
+
+	//Listens for a single connection 
+	// Accept a client socket
+	clientSocket = accept(listenSocket, NULL, NULL);
+	if (clientSocket == INVALID_SOCKET) {
+		std::cout << "accept failed: " << WSAGetLastError() << std::endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	std::cout << "Client connected!" << std::endl;
 
 
 	//TODO: Removed when server is functional

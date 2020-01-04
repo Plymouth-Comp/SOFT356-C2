@@ -77,7 +77,7 @@ int main()
 	std::cout << "Binding socket: ";
 	iResult = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
-		printf("bind failed with error: %d\n", WSAGetLastError());
+		std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
 		freeaddrinfo(result);
 		closesocket(listenSocket);
 		WSACleanup();
@@ -89,6 +89,15 @@ int main()
 
 	std::cout << "done!" << std::endl;
 	
+	//Listen for a connection
+	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
+		std::cout << "Listen failed with error:" << WSAGetLastError() << std::endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+
 	//TODO: Removed when server is functional
 	//Stops the server from auto closing
 	std::string test;

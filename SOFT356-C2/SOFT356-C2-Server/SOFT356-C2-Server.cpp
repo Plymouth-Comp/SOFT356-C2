@@ -83,8 +83,13 @@ int main()
 		WSACleanup();
 		//return 1;
 	}
-	std::cout << "done!" << std::endl;
 
+	// Frees the addrinfo as it is no longer needed
+	freeaddrinfo(result);
+
+	std::cout << "done!" << std::endl;
+	
+	//TODO: Removed when server is functional
 	//Stops the server from auto closing
 	std::string test;
 	std::cin >> test;

@@ -34,7 +34,7 @@ int main()
 	if (iResult != 0) {
 		std::cout << "WSAStartup failed: " << iResult << std::endl;
 
-		return 1;
+		//return 1;
 	}
 
 	//Creates a socket
@@ -60,7 +60,7 @@ int main()
 	if (iResult != 0) {
 		std::cout << "getaddrinfo failed: " << iResult << std::endl;
 		WSACleanup();
-		return 1;
+		//return 1;
 	}
 
 	// Create a socket object
@@ -78,8 +78,27 @@ int main()
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		freeaddrinfo(result);
 		WSACleanup();
-		return 1;
+		//return 1;
 	}
+
+
+	// Connect to server.
+	iResult = connect(connectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		closesocket(connectSocket);
+		connectSocket = INVALID_SOCKET;
+	}
+
+	freeaddrinfo(result);
+
+	if (connectSocket == INVALID_SOCKET) {
+		std::cout << "Unable to connect to server" << std::endl;
+		WSACleanup();
+		//return 1;
+	}
+
+	std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

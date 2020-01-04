@@ -22,6 +22,9 @@ int main()
 {
     std::cout << "Starting Client!" << std::endl;
 
+	_getch();
+
+
 	WSADATA wsaData;
 	int iResult;
 

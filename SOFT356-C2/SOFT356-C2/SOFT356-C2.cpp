@@ -156,6 +156,28 @@ int ShutdownOutgoingConnection(SOCKET& connectSocket) {
 	return 0;
 }
 
+int ReciveData(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
+	int iResult;
+
+	// Receive data until the server closes the connection
+	do {
+		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0)
+			std::cout << "Bytes received:" << iResult << std::endl;
+		else if (iResult == 0)
+			std::cout << "Connection closed" << std::endl;
+		else
+			if (WSAGetLastError() == 10054) {
+				std::cout << "Server closed the connection" << std::endl;
+			}
+			else {
+				std::cout << "recv failed: " << WSAGetLastError() << std::endl;
+			}
+	} while (iResult > 0);
+
+	return 0;
+}
+
 int main()
 {
 	std::cout << "Starting Client!" << std::endl;
@@ -179,19 +201,8 @@ int main()
 	//No more data needs to be send so the outgoing connection is stopped
 	ShutdownOutgoingConnection(connectSocket);
 
-
-	int iResult;
-
-	// Receive data until the server closes the connection
-	do {
-		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-			std::cout << "Bytes received:" << iResult << std::endl;
-		else if (iResult == 0)
-			std::cout << "Connection closed" << std::endl;
-		else
-			std::cout << "recv failed: " << WSAGetLastError() << std::endl;
-	} while (iResult > 0);
+	//Keeps reciving data untill server closes connection
+	ReciveData(connectSocket, recvbuflen, recvbuf);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

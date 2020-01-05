@@ -19,23 +19,31 @@
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
-int main()
-{
-	std::cout << "Starting Server!" << std::endl;
-
-
+int InitializeWinsock() {
 	WSADATA wsaData;
 	int iResult;
 
 	//Initialize Winsock
-	std::cout << "Initializing Winsock: ";
 	// MAKEWORD requests version 2.2 of winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		std::cout << "WSAStartup failed: " << iResult << std::endl;
-		
-		//return 1;
+
+		return 1;
 	}
+
+	return 0;
+}
+
+int main()
+{
+	std::cout << "Starting Server!" << std::endl;
+
+	//Start winsock
+	InitializeWinsock();
+
+	
+	int iResult;
 
 	struct addrinfo
 		*result = NULL,

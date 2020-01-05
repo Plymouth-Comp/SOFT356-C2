@@ -22,8 +22,8 @@
 
 // Declares an object wich contains the sockaddr and initializes the values
 struct addrinfo
-	* result = NULL,
-	* ptr = NULL,
+	*result = NULL,
+	*ptr = NULL,
 	hints;
 
 int InitializeWinsock() {
@@ -99,17 +99,7 @@ int CreateSocket(SOCKET& connectSocket) {
 	return 0;
 }
 
-int main()
-{
-	std::cout << "Starting Client!" << std::endl;
-
-	//Start winsock
-	InitializeWinsock();
-
-	//Create the socket
-	SOCKET connectSocket = INVALID_SOCKET;
-	CreateSocket(connectSocket);
-
+int ConnectToServer(SOCKET& connectSocket) {
 	int iResult;
 
 	//Connect to server.
@@ -124,10 +114,30 @@ int main()
 	if (connectSocket == INVALID_SOCKET) {
 		std::cout << "Unable to connect to server" << std::endl;
 		WSACleanup();
-		//return 1;
+		return 1;
 	}
 
-	//std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
+	std::cout << "Client connected to server!" << std::endl;
+
+	return 0;
+}
+
+int main()
+{
+	std::cout << "Starting Client!" << std::endl;
+
+	//Start winsock
+	InitializeWinsock();
+
+	//Create the socket
+	SOCKET connectSocket = INVALID_SOCKET;
+	CreateSocket(connectSocket);
+
+	//Connect to the server using the socket
+	ConnectToServer(connectSocket);
+
+
+	int iResult;
 
 	//int iResult;
 	int recvbuflen = DEFAULT_BUFLEN;

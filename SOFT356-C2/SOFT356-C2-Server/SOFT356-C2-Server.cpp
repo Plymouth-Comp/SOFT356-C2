@@ -72,6 +72,7 @@ int CreateSocket(SOCKET& listenSocket) {
 		WSACleanup();
 		return 1;
 	}
+
 	std::cout << "done!" << std::endl;
 
 	return 0;
@@ -82,6 +83,7 @@ int BindSocket(SOCKET& listenSocket) {
 
 	//Setup the TCP listening socket
 	std::cout << "Binding socket: ";
+
 	iResult = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
 		std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
@@ -93,6 +95,36 @@ int BindSocket(SOCKET& listenSocket) {
 
 	// Frees the addrinfo as it is no longer needed
 	freeaddrinfo(result);
+
+	std::cout << "done!" << std::endl;
+
+	return 0;
+}
+
+int ListenOnSocket(SOCKET& listenSocket) {
+	//Listen for a connection
+	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
+		std::cout << "Listen failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	return 0;
+}
+
+int AcceptConnection(SOCKET& listenSocket, SOCKET& clientSocket) {
+	std::cout << "Listening for client" << std::endl;
+
+	clientSocket = accept(listenSocket, NULL, NULL);
+	if (clientSocket == INVALID_SOCKET) {
+		std::cout << "accept failed: " << WSAGetLastError() << std::endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	std::cout << "Client connected!" << std::endl;
 
 	return 0;
 }
@@ -111,37 +143,16 @@ int main()
 	//Bind the socket
 	BindSocket(listenSocket);
 
+	//Listens on the socket untill a client conects
+	//For multiple clients, this should be run on a seperate thread
+	ListenOnSocket(listenSocket);
 
-	int iResult;
-
-	std::cout << "done!" << std::endl;
-	
-	//Listen for a connection
-	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		std::cout << "Listen failed with error: " << WSAGetLastError() << std::endl;
-		closesocket(listenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-
-	//Listens for a single connection 
 	// Accept a client socket
 	SOCKET clientSocket = INVALID_SOCKET;
-
-	std::cout << "Listening for client" << std::endl;
+	AcceptConnection(listenSocket, clientSocket);
 	
-	clientSocket = accept(listenSocket, NULL, NULL);
-	if (clientSocket == INVALID_SOCKET) {
-		std::cout << "accept failed: " << WSAGetLastError() << std::endl;
-		closesocket(listenSocket);
-		WSACleanup();
-		return 1;
-	}
 
-	std::cout << "Client connected!" << std::endl;
-
-
+	int iResult;
 
 	//Recieve and send data
 	char recvbuf[DEFAULT_BUFLEN];

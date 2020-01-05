@@ -77,6 +77,26 @@ int CreateSocket(SOCKET& listenSocket) {
 	return 0;
 }
 
+int BindSocket(SOCKET& listenSocket) {
+	int iResult;
+
+	//Setup the TCP listening socket
+	std::cout << "Binding socket: ";
+	iResult = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
+		freeaddrinfo(result);
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	// Frees the addrinfo as it is no longer needed
+	freeaddrinfo(result);
+
+	return 0;
+}
+
 int main()
 {
 	std::cout << "Starting Server!" << std::endl;
@@ -88,22 +108,11 @@ int main()
 	SOCKET listenSocket = INVALID_SOCKET;
 	CreateSocket(listenSocket);
 	
+	//Bind the socket
+	BindSocket(listenSocket);
+
 
 	int iResult;
-
-	//Setup the TCP listening socket
-	std::cout << "Binding socket: ";
-	iResult = bind(listenSocket, result->ai_addr, (int)result->ai_addrlen);
-	if (iResult == SOCKET_ERROR) {
-		std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
-		freeaddrinfo(result);
-		closesocket(listenSocket);
-		WSACleanup();
-		//return 1;
-	}
-
-	// Frees the addrinfo as it is no longer needed
-	freeaddrinfo(result);
 
 	std::cout << "done!" << std::endl;
 	

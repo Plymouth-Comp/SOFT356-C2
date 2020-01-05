@@ -122,6 +122,24 @@ int ConnectToServer(SOCKET& connectSocket) {
 	return 0;
 }
 
+int SendDataToServer(SOCKET& connectSocket, int recvbuflen, char* recvbuf, const char* message) {
+
+	int iResult;
+
+	// Send an initial buffer
+	iResult = send(connectSocket, message, (int)strlen(message), 0);
+	if (iResult == SOCKET_ERROR) {
+		std::cout << "send failed: " << iResult << std::endl;
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	std::cout << "Bytes Sent: " << iResult << std::endl;
+
+	return 0;
+}
+
 int main()
 {
 	std::cout << "Starting Client!" << std::endl;
@@ -136,25 +154,14 @@ int main()
 	//Connect to the server using the socket
 	ConnectToServer(connectSocket);
 
+	//Send a message to the server
+	const char* message = "this is a test";
+	int recvbuflen = DEFAULT_BUFLEN;
+	char recvbuf[DEFAULT_BUFLEN];
+	SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
+
 
 	int iResult;
-
-	//int iResult;
-	int recvbuflen = DEFAULT_BUFLEN;
-
-	const char* sendbuf = "this is a test";
-	char recvbuf[DEFAULT_BUFLEN];
-
-	// Send an initial buffer
-	iResult = send(connectSocket, sendbuf, (int)strlen(sendbuf), 0);
-	if (iResult == SOCKET_ERROR) {
-		std::cout << "send failed: " << iResult << std::endl;
-		closesocket(connectSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	std::cout << "Bytes Sent: " << iResult << std::endl;
 
 	// shutdown the connection for sending since no more data will be sent
 	// the client can still use the ConnectSocket for receiving data

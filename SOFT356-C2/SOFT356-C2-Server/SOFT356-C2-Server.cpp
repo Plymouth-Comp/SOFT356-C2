@@ -6,6 +6,7 @@
 #endif
 
 #define DEFAULT_PORT "27015"
+#define DEFAULT_BUFLEN 512
 
 #include <windows.h>
 
@@ -97,10 +98,13 @@ int main()
 		return 1;
 	}
 
-	SOCKET clientSocket = INVALID_SOCKET;
 
 	//Listens for a single connection 
 	// Accept a client socket
+	SOCKET clientSocket = INVALID_SOCKET;
+
+	std::cout << "Listening for client" << std::endl;
+	
 	clientSocket = accept(listenSocket, NULL, NULL);
 	if (clientSocket == INVALID_SOCKET) {
 		std::cout << "accept failed: " << WSAGetLastError() << std::endl;
@@ -111,6 +115,41 @@ int main()
 
 	std::cout << "Client connected!" << std::endl;
 
+
+
+	//Recieve and send data
+	char recvbuf[DEFAULT_BUFLEN];
+	int iSendResult;
+	int recvbuflen = DEFAULT_BUFLEN;
+
+	// Receive until the peer shuts down the connection
+	do {
+		iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0) {
+			std::cout << "Bytes received: " << std::endl;
+
+			std::cout << "Message: " << recvbuf << std::endl;
+
+			// Echo the buffer back to the sender
+			iSendResult = send(clientSocket, recvbuf, iResult, 0);
+			if (iSendResult == SOCKET_ERROR) {
+				std::cout << "send failed: " << WSAGetLastError() << std::endl;
+				closesocket(clientSocket);
+				WSACleanup();
+				//return 1;
+			}
+
+			std::cout << "Bytes sent: " << std::endl;
+		}
+		else if (iResult == 0)
+			std::cout << "Connection closing..." << std::endl;
+		else {
+			std::cout << "recv failed: " << WSAGetLastError() << std::endl;
+			closesocket(clientSocket);
+			WSACleanup();
+			//return 1;
+		}
+	} while (iResult > 0);
 
 	//TODO: Removed when server is functional
 	//Stops the server from auto closing

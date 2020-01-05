@@ -6,6 +6,7 @@
 #endif
 
 #define DEFAULT_PORT "27015"
+#define DEFAULT_BUFLEN 512
 
 #include <windows.h>
 
@@ -21,8 +22,6 @@
 int main()
 {
     std::cout << "Starting Client!" << std::endl;
-
-	_getch();
 
 
 	WSADATA wsaData;
@@ -54,6 +53,8 @@ int main()
 	std::string hostIPAddress;
 	std::cout << "Enter host ip address: ";
 	std::cin >> hostIPAddress;
+
+
 
 	// Resolve the server address and port
 	iResult = getaddrinfo(hostIPAddress.c_str(), DEFAULT_PORT, &hints, &result);
@@ -99,6 +100,44 @@ int main()
 
 	std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
 
+
+
+	int recvbuflen = DEFAULT_BUFLEN;
+
+	const char* sendbuf = "this is a test";
+	char recvbuf[DEFAULT_BUFLEN];
+
+	// Send an initial buffer
+	iResult = send(connectSocket, sendbuf, (int)strlen(sendbuf), 0);
+	if (iResult == SOCKET_ERROR) {
+		std::cout << "send failed: " << iResult << std::endl;
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	std::cout << "Bytes Sent: " << iResult << std::endl;
+
+	// shutdown the connection for sending since no more data will be sent
+	// the client can still use the ConnectSocket for receiving data
+	iResult = shutdown(connectSocket, SD_SEND);
+	if (iResult == SOCKET_ERROR) {
+		std::cout << "shutdown failed: " << WSAGetLastError() << std::endl;
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	// Receive data until the server closes the connection
+	do {
+		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0)
+			std::cout << "Bytes received:" << iResult << std::endl;
+		else if (iResult == 0)
+			std::cout << "Connection closed" << std::endl;
+		else
+			std::cout << "recv failed: " << WSAGetLastError() << std::endl;
+	} while (iResult > 0);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

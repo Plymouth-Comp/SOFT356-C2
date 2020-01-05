@@ -20,11 +20,7 @@
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
-int main()
-{
-	std::cout << "Starting Client!" << std::endl;
-
-
+int InitializeWinsock() {
 	WSADATA wsaData;
 	int iResult;
 
@@ -34,8 +30,20 @@ int main()
 	if (iResult != 0) {
 		std::cout << "WSAStartup failed: " << iResult << std::endl;
 
-		//return 1;
+		return 1;
 	}
+
+	return 0;
+}
+
+
+int main()
+{
+	std::cout << "Starting Client!" << std::endl;
+
+	InitializeWinsock();
+
+	int iResult;
 
 	//Creates a socket
 	// Declares an object wich contains the sockaddr and initializes the values
@@ -58,7 +66,7 @@ int main()
 	while (ipSelection != 'n' && ipSelection != 'N' && ipSelection != 'y' && ipSelection != 'Y') {
 		std::cout << "Used default IP (127.0.0.1)? Y/N" << std::endl;
 		ipSelection = _getch();
-		
+
 	}
 
 	//  Sets the ip depending on the users selection
@@ -97,7 +105,6 @@ int main()
 		//return 1;
 	}
 
-
 	// Connect to server.
 	iResult = connect(connectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
@@ -115,8 +122,7 @@ int main()
 
 	std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
 
-
-
+	//int iResult;
 	int recvbuflen = DEFAULT_BUFLEN;
 
 	const char* sendbuf = "this is a test";

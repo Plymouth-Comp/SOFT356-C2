@@ -7,6 +7,7 @@
 
 #define DEFAULT_PORT "27015"
 #define DEFAULT_BUFLEN 512
+#define DEFAULT_IP "127.0.0.1"
 
 #include <windows.h>
 
@@ -21,7 +22,7 @@
 
 int main()
 {
-    std::cout << "Starting Client!" << std::endl;
+	std::cout << "Starting Client!" << std::endl;
 
 
 	WSADATA wsaData;
@@ -49,12 +50,26 @@ int main()
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
-	// Gets the host ip from the user
+	// Gets the ip from the user
+	char ipSelection = 'u';
 	std::string hostIPAddress;
-	std::cout << "Enter host ip address: ";
-	std::cin >> hostIPAddress;
 
+	//  Loops until valid input
+	while (ipSelection != 'n' && ipSelection != 'N' && ipSelection != 'y' && ipSelection != 'Y') {
+		std::cout << "Used default IP (127.0.0.1)? Y/N" << std::endl;
+		ipSelection = _getch();
+		
+	}
 
+	//  Sets the ip depending on the users selection
+	if (ipSelection == 'n' || ipSelection == 'N') {
+		// Gets the host ip from the user
+		std::cout << "Enter host ip address: ";
+		std::cin >> hostIPAddress;
+	}
+	else {
+		hostIPAddress = DEFAULT_IP;
+	}
 
 	// Resolve the server address and port
 	iResult = getaddrinfo(hostIPAddress.c_str(), DEFAULT_PORT, &hints, &result);

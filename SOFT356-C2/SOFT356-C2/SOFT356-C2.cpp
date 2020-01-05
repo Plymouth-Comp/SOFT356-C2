@@ -22,8 +22,8 @@
 
 // Declares an object wich contains the sockaddr and initializes the values
 struct addrinfo
-	*result = NULL,
-	*ptr = NULL,
+	* result = NULL,
+	* ptr = NULL,
 	hints;
 
 int InitializeWinsock() {
@@ -140,6 +140,22 @@ int SendDataToServer(SOCKET& connectSocket, int recvbuflen, char* recvbuf, const
 	return 0;
 }
 
+int ShutdownOutgoingConnection(SOCKET& connectSocket) {
+	int iResult;
+
+	//Shutdown the connection for sending since no more data will be sent
+	// the client can still use the ConnectSocket for receiving data
+	iResult = shutdown(connectSocket, SD_SEND);
+	if (iResult == SOCKET_ERROR) {
+		std::cout << "shutdown failed: " << WSAGetLastError() << std::endl;
+		closesocket(connectSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	return 0;
+}
+
 int main()
 {
 	std::cout << "Starting Client!" << std::endl;
@@ -160,18 +176,11 @@ int main()
 	char recvbuf[DEFAULT_BUFLEN];
 	SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
 
+	//No more data needs to be send so the outgoing connection is stopped
+	ShutdownOutgoingConnection(connectSocket);
+
 
 	int iResult;
-
-	// shutdown the connection for sending since no more data will be sent
-	// the client can still use the ConnectSocket for receiving data
-	iResult = shutdown(connectSocket, SD_SEND);
-	if (iResult == SOCKET_ERROR) {
-		std::cout << "shutdown failed: " << WSAGetLastError() << std::endl;
-		closesocket(connectSocket);
-		WSACleanup();
-		return 1;
-	}
 
 	// Receive data until the server closes the connection
 	do {

@@ -19,6 +19,12 @@
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
+struct addrinfo
+	* result = NULL,
+	* ptr = NULL,
+	hints;
+
+
 int InitializeWinsock() {
 	WSADATA wsaData;
 	int iResult;
@@ -35,20 +41,8 @@ int InitializeWinsock() {
 	return 0;
 }
 
-int main()
-{
-	std::cout << "Starting Server!" << std::endl;
-
-	//Start winsock
-	InitializeWinsock();
-
-	
+int CreateSocket(SOCKET& listenSocket) {
 	int iResult;
-
-	struct addrinfo
-		*result = NULL,
-		*ptr = NULL,
-		hints;
 
 	ZeroMemory(&hints, sizeof(hints));
 	// AF_INET specifies IPv4
@@ -62,13 +56,12 @@ int main()
 	if (iResult != 0) {
 		std::cout << "getaddrinfo failed: " << iResult << std::endl;
 		WSACleanup();
-		//return 1;
+		return 1;
 	}
 	std::cout << "done!" << std::endl;
 
 	// Creates the socket
 	std::cout << "Creating Socket: ";
-	SOCKET listenSocket = INVALID_SOCKET;
 
 	listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
@@ -77,10 +70,26 @@ int main()
 		std::cout << "Error at socket:" << WSAGetLastError() << std::endl;
 		freeaddrinfo(result);
 		WSACleanup();
-		//return 1;
+		return 1;
 	}
 	std::cout << "done!" << std::endl;
 
+	return 0;
+}
+
+int main()
+{
+	std::cout << "Starting Server!" << std::endl;
+
+	//Start winsock
+	InitializeWinsock();
+
+	//Create the socket
+	SOCKET listenSocket = INVALID_SOCKET;
+	CreateSocket(listenSocket);
+	
+
+	int iResult;
 
 	//Setup the TCP listening socket
 	std::cout << "Binding socket: ";

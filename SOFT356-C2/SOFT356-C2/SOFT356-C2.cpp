@@ -20,6 +20,12 @@
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
+// Declares an object wich contains the sockaddr and initializes the values
+struct addrinfo
+	* result = NULL,
+	* ptr = NULL,
+	hints;
+
 int InitializeWinsock() {
 	WSADATA wsaData;
 	int iResult;
@@ -36,22 +42,10 @@ int InitializeWinsock() {
 	return 0;
 }
 
-
-int main()
-{
-	std::cout << "Starting Client!" << std::endl;
-
-	InitializeWinsock();
-
+int CreateSocket(SOCKET& connectSocket) {
 	int iResult;
 
 	//Creates a socket
-	// Declares an object wich contains the sockaddr and initializes the values
-	struct addrinfo
-		* result = NULL,
-		* ptr = NULL,
-		hints;
-
 	ZeroMemory(&hints, sizeof(hints));
 	//  AF_UNSPEC allows for either IPv4 or IPv6
 	hints.ai_family = AF_UNSPEC;
@@ -87,9 +81,6 @@ int main()
 		//return 1;
 	}
 
-	// Create a socket object
-	SOCKET connectSocket = INVALID_SOCKET;
-
 	// Attempt to connect to the first address returned by the call to getaddrinfo
 	ptr = result;
 
@@ -102,10 +93,26 @@ int main()
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		freeaddrinfo(result);
 		WSACleanup();
-		//return 1;
+		return 1;
 	}
 
-	// Connect to server.
+	return 0;
+}
+
+int main()
+{
+	std::cout << "Starting Client!" << std::endl;
+
+	//Start winsock
+	InitializeWinsock();
+
+	//Create the socket
+	SOCKET connectSocket = INVALID_SOCKET;
+	CreateSocket(connectSocket);
+
+	int iResult;
+
+	//Connect to server.
 	iResult = connect(connectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
 		closesocket(connectSocket);
@@ -120,7 +127,7 @@ int main()
 		//return 1;
 	}
 
-	std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
+	//std::cout << "Client connected to server at: " << hostIPAddress << std::endl;
 
 	//int iResult;
 	int recvbuflen = DEFAULT_BUFLEN;

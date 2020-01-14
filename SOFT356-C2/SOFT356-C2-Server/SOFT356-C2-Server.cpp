@@ -11,6 +11,7 @@
 #include <windows.h>
 
 #include <iostream>
+#include <vector>
 #include <conio.h>
 
 #include <winsock2.h>
@@ -24,6 +25,72 @@ struct addrinfo
 	* ptr = NULL,
 	hints;
 
+
+struct GameObject {
+	int id;
+	float* position;
+	float* rotation;
+};
+
+				    //Message   ID,Pos  ,Rotation
+char stringIdea[] = "{GameObject;1,1,2,3,1,2,3}";
+
+
+
+int DecodeMessage(char* string) {
+	int count = 0;
+
+	std::cout << "Starting Decode: " << string << std::endl;
+	//Checks for the start of the message
+	if (string[0] == '{') {
+		count++;
+		//Loops until the end of the string
+		while (string[count] != '}') {
+			std::string messageType;
+
+			//Loops till the end of the message type
+			while (string[count] != ';') {
+				messageType.push_back(string[count]);
+				count++;
+			}
+			std::cout << messageType << std::endl;
+			count++;
+
+			std::string newValue = "";
+			std::vector<std::string> values;
+
+			//Loops until the end of the string
+			while (string[count] != '}') {
+				//Loops until the end of each value
+				while (string[count] != ',' && string[count] != '}') {
+					newValue.push_back(string[count]);
+					count++;
+				}
+				//Adds the new value to the list of values
+				values.push_back(newValue);
+
+				//Resets the new vairable
+				newValue = "";
+
+				//Prevents count increasing at the end of the string
+				if (string[count] != '}') {
+					count++;
+				}
+			}
+
+			
+			if (messageType == "GameObject") {
+
+			}
+		}
+	}
+	else { 
+		//Returns 1 to show an error
+		return 1;
+	};
+
+	return 0;
+}
 
 int InitializeWinsock() {
 	WSADATA wsaData;
@@ -133,13 +200,18 @@ int main()
 {
 	std::cout << "Starting Server!" << std::endl;
 
+	DecodeMessage(stringIdea);
+
+	_getch();
+
+
 	//Start winsock
 	InitializeWinsock();
 
 	//Create the socket
 	SOCKET listenSocket = INVALID_SOCKET;
 	CreateSocket(listenSocket);
-	
+
 	//Bind the socket
 	BindSocket(listenSocket);
 
@@ -150,7 +222,7 @@ int main()
 	// Accept a client socket
 	SOCKET clientSocket = INVALID_SOCKET;
 	AcceptConnection(listenSocket, clientSocket);
-	
+
 
 	int iResult;
 
@@ -159,9 +231,11 @@ int main()
 	int iSendResult;
 	int recvbuflen = DEFAULT_BUFLEN;
 
+
 	// Receive until the peer shuts down the connection
 	do {
 		iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
+
 		if (iResult > 0) {
 			std::cout << "Bytes received: " << std::endl;
 

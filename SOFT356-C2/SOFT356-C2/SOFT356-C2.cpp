@@ -196,7 +196,13 @@ int main()
 	const char* message = "this is a test";
 	int recvbuflen = DEFAULT_BUFLEN;
 	char recvbuf[DEFAULT_BUFLEN];
-	SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
+	//SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
+
+	std::string msg = "Object";
+	recvbuflen = sizeof(msg);
+	recvbuf[sizeof(msg)];
+
+	SendDataToServer(connectSocket, recvbuflen, recvbuf, msg.c_str());
 
 	//No more data needs to be send so the outgoing connection is stopped
 	ShutdownOutgoingConnection(connectSocket);

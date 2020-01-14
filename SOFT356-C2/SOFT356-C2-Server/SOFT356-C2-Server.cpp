@@ -41,7 +41,6 @@ char stringIdea[] = "{GameObject;1,3,4,5,8,9,10}";
 int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
 
-	std::cout << "Starting Decode: " << string << std::endl;
 	//Checks for the start of the message
 	if (string[0] == '{') {
 		count++;
@@ -54,7 +53,6 @@ int DecodeMessage(char* string, std::vector<std::string>& values) {
 				messageType.push_back(string[count]);
 				count++;
 			}
-			std::cout << messageType << std::endl;
 			count++;
 
 			std::string newValue = "";
@@ -221,10 +219,6 @@ int main()
 
 		}
 	}
-
-	std::cout << "ID: " <<object.id << std::endl;
-	std::cout << "Position: " << object.position[0] << ", " << object.position[1] << ", " << object.position[2] << std::endl;
-	std::cout << "Rotation: " << object.rotation[0] << ", " << object.position[1] << ", " << object.position[2] << std::endl;
 
 	_getch();
 

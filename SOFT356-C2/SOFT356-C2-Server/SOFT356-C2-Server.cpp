@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 #include <conio.h>
 
 #include <winsock2.h>
@@ -33,11 +34,11 @@ struct GameObject {
 };
 
 				    //Message   ID,Pos  ,Rotation
-char stringIdea[] = "{GameObject;1,1,2,3,1,2,3}";
+char stringIdea[] = "{GameObject;1,3,4,5,8,9,10}";
 
 
 
-int DecodeMessage(char* string) {
+int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
 
 	std::cout << "Starting Decode: " << string << std::endl;
@@ -57,7 +58,6 @@ int DecodeMessage(char* string) {
 			count++;
 
 			std::string newValue = "";
-			std::vector<std::string> values;
 
 			//Loops until the end of the string
 			while (string[count] != '}') {
@@ -78,17 +78,13 @@ int DecodeMessage(char* string) {
 				}
 			}
 
-			
 			if (messageType == "GameObject") {
-
+				return 1;
 			}
 		}
 	}
-	else { 
-		//Returns 1 to show an error
-		return 1;
-	};
 
+	//Returns 0 to show an error
 	return 0;
 }
 
@@ -200,7 +196,35 @@ int main()
 {
 	std::cout << "Starting Server!" << std::endl;
 
-	DecodeMessage(stringIdea);
+	std::vector<std::string> values;
+
+	int messageType = DecodeMessage(stringIdea, values);
+	
+	GameObject object;
+
+	//MessageType 2 means a gameobject
+	if (messageType == 1) {
+		object.position = new float[3];
+		object.rotation = new float[3];
+
+		try {
+			//Stores the 
+			object.id = std::stoi(values[0]);
+			object.position[0] = std::stof(values[1]);
+			object.position[1] = std::stof(values[2]);
+			object.position[2] = std::stof(values[3]);
+			object.rotation[0] = std::stof(values[4]);
+			object.rotation[1] = std::stof(values[5]);
+			object.rotation[2] = std::stof(values[6]);
+		}
+		catch (std::exception e) {
+
+		}
+	}
+
+	std::cout << "ID: " <<object.id << std::endl;
+	std::cout << "Position: " << object.position[0] << ", " << object.position[1] << ", " << object.position[2] << std::endl;
+	std::cout << "Rotation: " << object.rotation[0] << ", " << object.position[1] << ", " << object.position[2] << std::endl;
 
 	_getch();
 

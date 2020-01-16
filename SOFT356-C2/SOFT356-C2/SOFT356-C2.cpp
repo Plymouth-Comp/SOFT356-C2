@@ -17,6 +17,11 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+//OpenGL
+#include "GL/glew.h"
+#include "GL/freeglut.h"
+#include "GLFW/glfw3.h"
+
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -25,6 +30,55 @@ struct addrinfo
 	* result = NULL,
 	* ptr = NULL,
 	hints;
+
+
+
+void OpenGL() {
+	glfwInit();
+
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Model Viewer", NULL, NULL);
+
+	glfwMakeContextCurrent(window);
+	glewInit();
+
+	while (!glfwWindowShouldClose(window)) {
+		//display(delta, *object, objectScale);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+		//Incriment time
+		//delta += 0.1f;
+
+		//Key controls
+		// CLoses the window when 'Q' is pressed
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+			std::string input;
+
+			std::cout << "Are you sure? (Y/N)" << std::endl;
+			char quitConfirmation = ' ';
+
+			while (quitConfirmation != 'y' && quitConfirmation != 'n') {
+				quitConfirmation = _getch();
+
+				if (quitConfirmation == 'y') {
+					std::cout << "Closing Model Viewer" << std::endl;
+					glfwSetWindowShouldClose(window, true);
+				}
+			}
+		}
+
+	}
+
+	std::cout << "Closed Window" << std::endl;
+
+
+	glfwDestroyWindow(window);
+
+	glfwTerminate();
+
+}
+
+
 
 int InitializeWinsock() {
 	WSADATA wsaData;
@@ -181,6 +235,11 @@ int ReciveData(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
 int main()
 {
 	std::cout << "Starting Client!" << std::endl;
+
+	std::cout << "Starting OpenGL" << std::endl;
+	OpenGL();
+
+	_getch();
 
 	//Start winsock
 	InitializeWinsock();

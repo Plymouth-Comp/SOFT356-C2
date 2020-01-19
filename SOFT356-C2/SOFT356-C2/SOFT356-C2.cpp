@@ -9,6 +9,8 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_IP "127.0.0.1"
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <windows.h>
 
 #include <iostream>
@@ -23,10 +25,9 @@
 #include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 
-//Assimp
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "Model.h"
+
+
 
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
@@ -44,6 +45,9 @@ void OpenGL() {
 
 	glfwMakeContextCurrent(window);
 	glewInit();
+
+	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/TestObj/cube.obj" };
+	Model testModel(testPath);
 
 	while (!glfwWindowShouldClose(window)) {
 		//display(delta, *object, objectScale);
@@ -242,6 +246,9 @@ int main()
 
 	std::cout << "Starting OpenGL" << std::endl;
 	OpenGL();
+
+
+	
 
 	_getch();
 

@@ -39,7 +39,7 @@ public:
 	void Draw();//Shader shader);
 
 	/*  Render data  */
-	unsigned int VAO, VBO, EBO;
+	GLuint VAO, VBO, EBO;
 	/*  Functions    */
 	void setupMesh();
 };

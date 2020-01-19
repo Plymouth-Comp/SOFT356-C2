@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <conio.h>
+#include <vector>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -21,12 +22,6 @@
 #include "GL/glew.h"
 #include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
-
-//GLM
-#include <glm.hpp> //includes GML
-#include <ext/matrix_transform.hpp> // GLM: translate, rotate
-#include <ext/matrix_clip_space.hpp> // GLM: perspective and ortho 
-#include <gtc/type_ptr.hpp> // GLM: access to the value_ptr
 
 //Assimp
 #include <assimp/Importer.hpp>
@@ -41,7 +36,6 @@ struct addrinfo
 	* result = NULL,
 	* ptr = NULL,
 	hints;
-
 
 void OpenGL() {
 	glfwInit();

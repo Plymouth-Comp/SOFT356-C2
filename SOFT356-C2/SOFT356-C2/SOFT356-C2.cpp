@@ -22,6 +22,11 @@
 #include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 
+//Assimp
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 

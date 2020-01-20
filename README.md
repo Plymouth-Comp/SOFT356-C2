@@ -28,3 +28,7 @@ To send game object information the properties of the games object have to be co
 For a game object any characters after the ‘;’ are values, each value is separated by a ‘,’ or ended with a ‘}’. Game object values are in an order so they can be read (Object ID, Position x, Position y, Position z, Rotation x, Rotation y, Rotation z, Scale x, Scale y, Scale z). Combined a message looks like this “{GameObject;0,2,2,2,3,3,3,4,4,4}”
 ### Changing Game Object Data
 Game object data is changed on the sever. To do this the server has a separate thread which waits for a user to enter an input, if the input is a valid (1, 2, P, R, S) the users be able to adjust the game object which is stored on the server, once the object has been updated the server will sterilize the message and send it to the client. Once the message has been sent the thread will wait for a new input.
+## How it Compares
+Compared to other programs this project is lacking a lot, whist it does load models and can communicate with a server it is limited to one client and both have to be restarted to reconnect. But theses issues could be fixed using multiple threads so that the server can listen to incoming connections whilst still sending messages to connected clients.
+Networking has been an interested of mine and is an area that I might need for developing my final project which is also planed to be done in C++ so having an understanding of how it works would be a large help.
+

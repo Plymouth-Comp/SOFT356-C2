@@ -14,6 +14,7 @@
 #include <vector>
 #include <string>
 #include <conio.h>
+#include <thread>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -51,6 +52,8 @@ GameObject objectTwo{
 	glm::vec3(0.2,0.2,0.2),
 };
 
+
+bool terminateInput = false;
 
 //Converts the message from an object into a char string
 char* SerializeGameObject(GameObject object) {
@@ -232,6 +235,29 @@ int AcceptConnection(SOCKET& listenSocket, SOCKET& clientSocket) {
 	return 0;
 }
 
+void Input() {
+	GameObject* editGameObject = &objectOne;
+
+	//Loops until the terminate bool is fliped
+	while (!terminateInput) {
+		char input = _getch();
+
+		switch (input)
+		{
+		case '1':
+			std::cout << "Now Editing Object One" << std::endl;
+			editGameObject = &objectOne;
+			break;
+		case '2':
+			std::cout << "Now Editing Object Two" << std::endl;
+			editGameObject = &objectOne;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 int main()
 {
 	std::cout << "Starting Server!" << std::endl;
@@ -262,6 +288,7 @@ int main()
 	int iSendResult;
 	int recvbuflen = DEFAULT_BUFLEN;
 
+	std::thread inputThread(Input);
 
 	// Receive until the peer shuts down the connection
 	do {
@@ -307,4 +334,8 @@ int main()
 			//return 1;
 		}
 	} while (iResult > 0);
+
+	terminateInput = true;
+	
+	inputThread.join();
 }

@@ -72,6 +72,8 @@ struct GameObject {
 	Model model;
 };
 
+std::vector<GameObject> gameObjects;
+
 //Messages
 int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
@@ -121,7 +123,29 @@ int DecodeMessage(char* string, std::vector<std::string>& values) {
 	return 0;
 }
 
-int UpdateGameObjecT() {
+int UpdateGameObject(std::vector<std::string>& values) {
+	//"{GameObject;1,3,4,5,8,9,10}";
+
+	try {
+		//Gets the id from the message
+		int objectID = std::stoi(values[0].c_str());
+
+		//Checks if the objectID is out of range
+		if (gameObjects.size() < 10 && gameObjects.size() > 0) {
+			gameObjects[objectID].position.x = std::stof(values[1].c_str());
+			gameObjects[objectID].position.y = std::stof(values[2].c_str());
+			gameObjects[objectID].position.z = std::stof(values[3].c_str());
+
+			gameObjects[objectID].rotation.x = std::stof(values[4].c_str());
+			gameObjects[objectID].rotation.y = std::stof(values[5].c_str());
+			gameObjects[objectID].rotation.z = std::stof(values[6].c_str());
+		}
+	}
+	catch (std::exception e) {
+
+	}
+
+
 	return 0;
 }
 
@@ -325,7 +349,7 @@ int ReciveData() {
 			std::vector<std::string> values;
 			int messageType = DecodeMessage(recvbuf, values);
 			if (messageType == 1) {
-
+				UpdateGameObject(values);
 			}
 		}
 		else if (iResult == 0) {
@@ -367,10 +391,6 @@ void MainLoop() {
 	//Shader
 	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
 
-
-	//Stores all gameobject
-	std::vector<GameObject> gameObjects;
-
 	//Model
 	char modelPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
 	Model newModel(modelPath);
@@ -395,6 +415,10 @@ void MainLoop() {
 	};
 	
 	gameObjects.push_back(newGameObjectTwo);
+
+
+	//Keeps reciving data untill server closes connection
+	std::thread dataThread(ReciveData);
 
 
 	//Main loop
@@ -434,7 +458,6 @@ void MainLoop() {
 		for (int i = 0; i < gameObjects.size(); i++) {
 			gameObjects[i].model.Draw(shader);
 		}
-		
 
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -462,11 +485,6 @@ int main()
 	//Connect to the server using the socket
 	ConnectToServer(connectSocket);
 
-	//Send a message to the server
-	const char* message = "this is a test";
-	
-	//SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
-
 	std::string msg = "Object";
 	recvbuflen = DEFAULT_BUFLEN;
 	recvbuf[DEFAULT_BUFLEN];
@@ -475,9 +493,6 @@ int main()
 
 	//No more data needs to be send so the outgoing connection is stopped
 	ShutdownOutgoingConnection(connectSocket);
-
-	//Keeps reciving data untill server closes connection
-	std::thread dataThread(ReciveData);
 
 	std::cout << "Starting OpenGL" << std::endl;
 	MainLoop();

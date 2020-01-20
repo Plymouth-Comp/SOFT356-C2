@@ -34,7 +34,7 @@ struct GameObject {
 };
 
 				    //Message   ID,Pos  ,Rotation
-char stringIdea[] = "{GameObject;1,3,4,5,8,9,10}";
+char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180}";
 
 
 

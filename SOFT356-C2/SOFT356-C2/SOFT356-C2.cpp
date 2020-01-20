@@ -448,14 +448,20 @@ void MainLoop() {
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
 
-		// render the loaded model
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
-		shader.setMat4("model", model);
+		
 
 		//Draws all models
 		for (int i = 0; i < gameObjects.size(); i++) {
+			// render the loaded model
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::rotate(model, gameObjects[i].rotation.x, glm::vec3(1, 0, 0));
+			model = glm::rotate(model, gameObjects[i].rotation.y, glm::vec3(0, 1, 0));
+			model = glm::rotate(model, gameObjects[i].rotation.z, glm::vec3(0, 0, 1));
+
+			model = glm::translate(model, gameObjects[i].position); // translate it down so it's at the center of the scene
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+			shader.setMat4("model", model);
+
 			gameObjects[i].model.Draw(shader);
 		}
 

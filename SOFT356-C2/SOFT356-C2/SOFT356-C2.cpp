@@ -149,7 +149,7 @@ int UpdateGameObject(std::vector<std::string>& values) {
 		}
 	}
 	catch (std::exception e) {
-
+		std::cout << "ERROR::UPDATE GAMEOBJECT" << std::endl;
 	}
 
 

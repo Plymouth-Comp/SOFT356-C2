@@ -36,10 +36,7 @@ struct GameObject {
 	glm::vec3 scale;
 };
 
-				    //Message   ID,Pos  ,Rotation,  Scale
-char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180,0.2,0.2,0.2}";
-char stringIdeaTwo[] = "{GameObject;0,1,-1.7,1,0,0,0,0.02,0.02,0.02}";
-
+//ID,Pos,Rotation,Scale
 GameObject objectOne{
 	0,
 	glm::vec3(1,-1.7,1),
@@ -48,7 +45,7 @@ GameObject objectOne{
 };
 
 GameObject objectTwo{
-	0,
+	1,
 	glm::vec3(1,-1.7,1),
 	glm::vec3(180,180,180),
 	glm::vec3(0.2,0.2,0.2),
@@ -56,7 +53,8 @@ GameObject objectTwo{
 
 
 //Converts the message from an object into a char string
-void SerializeGameObject(GameObject object) {
+char* SerializeGameObject(GameObject object) {
+	
 	std::string message;
 
 	message += "{GameObject;" +
@@ -71,7 +69,14 @@ void SerializeGameObject(GameObject object) {
 		std::to_string(object.scale.y) + "," +
 		std::to_string(object.scale.z) + "}";
 
-	std::cout << "Message: " << message << std::endl;
+	char* outMessage = new char[message.length() + 1];
+
+	for (int i = 0; i < message.length(); i++) {
+		outMessage[i] = message[i];
+	}
+	outMessage[message.length()] = '\0';
+
+	return outMessage;
 }
 
 
@@ -231,31 +236,6 @@ int main()
 {
 	std::cout << "Starting Server!" << std::endl;
 
-	std::vector<std::string> values;
-
-	int messageType = DecodeMessage(stringIdea, values);
-	
-	/*
-	//MessageType 2 means a gameobject
-	if (messageType == 1) {
-		object.position = new float[3];
-		object.rotation = new float[3];
-
-		try {
-			//Stores the 
-			object.id = std::stoi(values[0]);
-			object.position[0] = std::stof(values[1]);
-			object.position[1] = std::stof(values[2]);
-			object.position[2] = std::stof(values[3]);
-			object.rotation[0] = std::stof(values[4]);
-			object.rotation[1] = std::stof(values[5]);
-			object.rotation[2] = std::stof(values[6]);
-		}
-		catch (std::exception e) {
-
-		}
-	}
-	*/
 	//Start winsock
 	InitializeWinsock();
 
@@ -294,10 +274,10 @@ int main()
 
 			// Echo the buffer back to the sender
 
-			SerializeGameObject(objectOne);
+			char* objectOneSerialized = SerializeGameObject(objectOne);
 
 			//Send First Object
-			iSendResult = send(clientSocket, stringIdea, iResult, 0);
+			iSendResult = send(clientSocket, objectOneSerialized, iResult, 0);
 			if (iSendResult == SOCKET_ERROR) {
 				std::cout << "send failed: " << WSAGetLastError() << std::endl;
 				closesocket(clientSocket);
@@ -305,8 +285,10 @@ int main()
 				//return 1;
 			}
 
+			char* objectTwoSerialized = SerializeGameObject(objectTwo);
+
 			//Send Second Object
-			iSendResult = send(clientSocket, stringIdeaTwo, iResult, 0);
+			iSendResult = send(clientSocket, objectTwoSerialized, iResult, 0);
 			if (iSendResult == SOCKET_ERROR) {
 				std::cout << "send failed: " << WSAGetLastError() << std::endl;
 				closesocket(clientSocket);

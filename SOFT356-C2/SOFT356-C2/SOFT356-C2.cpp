@@ -32,12 +32,27 @@
 #include <gtc/type_ptr.hpp> // GLM: access to the value_ptr
 
 #include "Model.h"
+#include "Camera.h"
 #include "Shader.h"
 
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
-GLuint program;
+
+//Settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+//Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+//Time
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 
 // Declares an object wich contains the sockaddr and initializes the values
 struct addrinfo
@@ -46,126 +61,129 @@ struct addrinfo
 	hints;
 
 
-void manipulateObject(glm::vec3 scale, GLfloat rotation, glm::vec3 position) {
-	//Rotates the object
-	//Model matrix
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, scale);
-	model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::translate(model, position);
-
-	//View matrix
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -15.0f));
-
-	//Projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 20.0f);
-
-	//Combined matrix
-	glm::mat4 mvp = projection * view * model;
-
-
-	//Adding the Uniform to the shader
-	int mvpLoc = glGetUniformLocation(program, "mvp");
-	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
-
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
 }
 
-
-void display(GLfloat delta, Model &object, GLfloat scale, Shader shader) {
-	static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-	glClearBufferfv(GL_COLOR, 0, black);
-	glClear(GL_COLOR_BUFFER_BIT);
-	//Bind textures on corresponding texture units
-	glFrontFace(GL_CW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-
-	//Move the object
-	manipulateObject(glm::vec3{ scale, scale, scale }, 1.0f * delta, glm::vec3{ 0.0f, -1.0f, 0.0f });
-
-
-	object.Draw(shader);
-
-	/*
-	glBindVertexArray(VAOs[Triangles]);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glDrawElements(GL_TRIANGLES, object.getIndex().size(), GL_UNSIGNED_INT, 0);
-	if (glGetError() != GL_NO_ERROR) {
-		cout << "ERROR!: " << glGetError();
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
 	}
-	*/
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.ProcessMouseScroll(yoffset);
+}
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
 
 void OpenGL() {
 	glfwInit();
+	
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Model Viewer", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Model Viewer", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
+	// tell GLFW to capture our mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	glewInit();
+
+	glEnable(GL_DEPTH_TEST);
 
 	//Shader
 	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
 
-
-	glUseProgram(program);
-
-	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/TestObj/cube.obj" };
+	//Model
+	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
+		//{ "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
+	
+					   //C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356 - C2\models\crysis - nano - suit - 2\source
 	Model testModel(testPath);
 
 
 	//Main loop
-	GLfloat objectScale = 1.0f;
-
-	float deltaTime = 0.0f;
-	float lastFrame = 0.0f;
-
 	while (!glfwWindowShouldClose(window)) {
-		display(deltaTime, testModel, objectScale, shader);
-
-
+		// per-frame time logic
+	   // --------------------
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// input
+		// -----
+		processInput(window);
+
+		// render
+		// ------
+		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// don't forget to enable shader before setting uniforms
+		shader.use();
+
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+
+		// render the loaded model
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		shader.setMat4("model", model);
+		testModel.Draw(shader);
 
 
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-
-
-
-
-		//Incriment time
-		//delta += 0.1f;
-
-		//Key controls
-		// CLoses the window when 'Q' is pressed
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-			std::string input;
-
-			std::cout << "Are you sure? (Y/N)" << std::endl;
-			char quitConfirmation = ' ';
-
-			while (quitConfirmation != 'y' && quitConfirmation != 'n') {
-				quitConfirmation = _getch();
-
-				if (quitConfirmation == 'y') {
-					std::cout << "Closing Model Viewer" << std::endl;
-					glfwSetWindowShouldClose(window, true);
-				}
-			}
-		}
-
 	}
 
 	std::cout << "Closed Window" << std::endl;
-
-
-	glfwDestroyWindow(window);
 
 	glfwTerminate();
 
@@ -331,9 +349,6 @@ int main()
 
 	std::cout << "Starting OpenGL" << std::endl;
 	OpenGL();
-
-
-	
 
 	_getch();
 

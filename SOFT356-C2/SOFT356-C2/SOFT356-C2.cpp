@@ -44,7 +44,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 //Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -130,6 +130,8 @@ void OpenGL() {
 
 	glewInit();
 
+	// configure global opengl state
+	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
 	//Shader
@@ -166,6 +168,7 @@ void OpenGL() {
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
+		
 		shader.setMat4("projection", projection);
 		shader.setMat4("view", view);
 

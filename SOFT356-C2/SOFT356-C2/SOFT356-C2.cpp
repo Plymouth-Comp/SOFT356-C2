@@ -128,6 +128,8 @@ int UpdateGameObject(std::vector<std::string>& values) {
 	//"{GameObject;1,3,4,5,8,9,10}";
 
 	try {
+		std::cout << "Recived Message" << std::endl;
+
 		//Gets the id from the message
 		int objectID = std::stoi(values[0].c_str());
 

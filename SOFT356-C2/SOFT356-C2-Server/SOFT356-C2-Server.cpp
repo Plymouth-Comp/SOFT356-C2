@@ -18,6 +18,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#include <glm.hpp> //includes GML
+
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -29,14 +31,28 @@ struct addrinfo
 
 struct GameObject {
 	int id;
-	float* position;
-	float* rotation;
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
 };
 
-				    //Message   ID,Pos  ,Rotation
-char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180, 0.2, 0.2, 0.2}";
+				    //Message   ID,Pos  ,Rotation,  Scale
+char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180,0.2,0.2,0.2}";
+char stringIdeaTwo[] = "{GameObject;0,1,-1.7,1,0,0,0,0.02,0.02,0.02}";
 
+GameObject objectOne{
+	0,
+	glm::vec3(1,-1.7,1),
+	glm::vec3(0,0,0),
+	glm::vec3(0.02,0.02,0.02),
+};
 
+GameObject objectTwo{
+	0,
+	glm::vec3(1,-1.7,1),
+	glm::vec3(180,180,180),
+	glm::vec3(0.2,0.2,0.2),
+};
 
 int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
@@ -198,8 +214,7 @@ int main()
 
 	int messageType = DecodeMessage(stringIdea, values);
 	
-	GameObject object;
-
+	/*
 	//MessageType 2 means a gameobject
 	if (messageType == 1) {
 		object.position = new float[3];
@@ -219,7 +234,7 @@ int main()
 
 		}
 	}
-
+	*/
 	//Start winsock
 	InitializeWinsock();
 
@@ -267,6 +282,14 @@ int main()
 				//return 1;
 			}
 
+			iSendResult = send(clientSocket, stringIdeaTwo, iResult, 0);
+			if (iSendResult == SOCKET_ERROR) {
+				std::cout << "send failed: " << WSAGetLastError() << std::endl;
+				closesocket(clientSocket);
+				WSACleanup();
+				//return 1;
+			}
+
 			std::cout << "Bytes sent: " << std::endl;
 		}
 		else if (iResult == 0)
@@ -284,14 +307,3 @@ int main()
 	std::string test;
 	std::cin >> test;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

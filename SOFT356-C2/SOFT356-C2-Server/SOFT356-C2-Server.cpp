@@ -54,6 +54,27 @@ GameObject objectTwo{
 	glm::vec3(0.2,0.2,0.2),
 };
 
+
+//Converts the message from an object into a char string
+void SerializeGameObject(GameObject object) {
+	std::string message;
+
+	message += "{GameObject;" +
+		std::to_string(object.id) + "," +
+		std::to_string(object.position.x) + "," +
+		std::to_string(object.position.y) + "," +
+		std::to_string(object.position.z) + "," +
+		std::to_string(object.rotation.x) + "," +
+		std::to_string(object.rotation.y) + "," +
+		std::to_string(object.rotation.z) + "," +
+		std::to_string(object.scale.x) + "," +
+		std::to_string(object.scale.y) + "," +
+		std::to_string(object.scale.z) + "}";
+
+	std::cout << "Message: " << message << std::endl;
+}
+
+
 int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
 
@@ -272,8 +293,10 @@ int main()
 			std::cout << "Message: " << recvbuf << std::endl;
 
 			// Echo the buffer back to the sender
-			//  iResult = send(connectSocket, message, (int)strlen(message), 0);
-			//iSendResult = send(clientSocket, recvbuf, iResult, 0);
+
+			SerializeGameObject(objectOne);
+
+			//Send First Object
 			iSendResult = send(clientSocket, stringIdea, iResult, 0);
 			if (iSendResult == SOCKET_ERROR) {
 				std::cout << "send failed: " << WSAGetLastError() << std::endl;
@@ -282,6 +305,7 @@ int main()
 				//return 1;
 			}
 
+			//Send Second Object
 			iSendResult = send(clientSocket, stringIdeaTwo, iResult, 0);
 			if (iSendResult == SOCKET_ERROR) {
 				std::cout << "send failed: " << WSAGetLastError() << std::endl;

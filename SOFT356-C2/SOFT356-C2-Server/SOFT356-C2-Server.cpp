@@ -238,6 +238,10 @@ int AcceptConnection(SOCKET& listenSocket, SOCKET& clientSocket) {
 void Input() {
 	GameObject* editGameObject = &objectOne;
 
+	std::string valueInput;
+
+	bool validInput = false;
+
 	//Loops until the terminate bool is fliped
 	while (!terminateInput) {
 		char input = _getch();
@@ -252,10 +256,36 @@ void Input() {
 			std::cout << "Now Editing Object Two" << std::endl;
 			editGameObject = &objectOne;
 			break;
+		case 'p':
+			std::cout << "Editing Object Position" << std::endl;
+
+			for (int i = 0; i < 3; i++) {
+				while (!validInput) {
+					std::cout << "Enter Value " << i << std::endl;
+					std::cin >> valueInput;
+
+					try {
+						float value = std::stof(valueInput.c_str());
+						editGameObject->position[i] = value;
+						std::cout << "Valid" << std::endl;
+						validInput = true;
+					}
+					catch (std::exception e) {
+						std::cout << "Invalid Value" << std::endl;
+					}
+				}
+				validInput = false;
+			}
+			std::cout << "Position Succesfuly Edited" << std::endl;
+			break;
 		default:
 			break;
 		}
+
+		std::cout << "1 Pos: " << objectOne.position.x << ", " << objectOne.position.y << ", " << objectOne.position.z << std::endl;
 	}
+
+	
 }
 
 int main()

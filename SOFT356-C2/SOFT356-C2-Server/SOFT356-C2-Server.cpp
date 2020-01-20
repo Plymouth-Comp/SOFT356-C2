@@ -307,9 +307,4 @@ int main()
 			//return 1;
 		}
 	} while (iResult > 0);
-
-	//TODO: Removed when server is functional
-	//Stops the server from auto closing
-	std::string test;
-	std::cin >> test;
 }

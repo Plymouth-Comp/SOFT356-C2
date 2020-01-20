@@ -220,8 +220,6 @@ int main()
 		}
 	}
 
-	M
-
 	_getch();
 
 

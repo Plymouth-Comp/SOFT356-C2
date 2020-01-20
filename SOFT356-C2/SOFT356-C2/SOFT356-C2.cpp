@@ -16,6 +16,7 @@
 #include <iostream>
 #include <conio.h>
 #include <vector>
+#include <thread>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -38,6 +39,11 @@
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
 
+
+//Socket
+SOCKET connectSocket = INVALID_SOCKET;
+int recvbuflen = DEFAULT_BUFLEN;
+char recvbuf[DEFAULT_BUFLEN];
 
 //Settings
 const unsigned int SCR_WIDTH = 800;
@@ -112,86 +118,6 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
-
-
-void OpenGL() {
-	glfwInit();
-	
-
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Model Viewer", NULL, NULL);
-
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-
-	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	glewInit();
-
-	// configure global opengl state
-	// -----------------------------
-	glEnable(GL_DEPTH_TEST);
-
-	//Shader
-	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
-
-	//Model
-	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
-		//{ "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
-	
-					   //C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356 - C2\models\crysis - nano - suit - 2\source
-	Model testModel(testPath);
-
-
-	//Main loop
-	while (!glfwWindowShouldClose(window)) {
-		// per-frame time logic
-	   // --------------------
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
-		// input
-		// -----
-		processInput(window);
-
-		// render
-		// ------
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// don't forget to enable shader before setting uniforms
-		shader.use();
-
-		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		
-		shader.setMat4("projection", projection);
-		shader.setMat4("view", view);
-
-		// render the loaded model
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
-		shader.setMat4("model", model);
-		testModel.Draw(shader);
-
-
-		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-		// -------------------------------------------------------------------------------
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-
-	std::cout << "Closed Window" << std::endl;
-
-	glfwTerminate();
-
-}
-
 
 
 int InitializeWinsock() {
@@ -324,7 +250,7 @@ int ShutdownOutgoingConnection(SOCKET& connectSocket) {
 	return 0;
 }
 
-int ReciveData(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
+int ReciveDataP(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
 	int iResult;
 
 	// Receive data until the server closes the connection
@@ -346,20 +272,114 @@ int ReciveData(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
 	return 0;
 }
 
+int ReciveData() {
+	int iResult;
+
+	// Receive data until the server closes the connection
+	do {
+		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0)
+			std::cout << "Bytes received:" << iResult << std::endl;
+		else if (iResult == 0)
+			std::cout << "Connection closed" << std::endl;
+		else
+			if (WSAGetLastError() == 10054) {
+				std::cout << "Server closed the connection" << std::endl;
+			}
+			else {
+				std::cout << "recv failed: " << WSAGetLastError() << std::endl;
+			}
+	} while (iResult > 0);
+
+	return 0;
+}
+
+void MainLoop() {
+	glfwInit();
+
+
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Model Viewer", NULL, NULL);
+
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
+	// tell GLFW to capture our mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	glewInit();
+
+	// configure global opengl state
+	// -----------------------------
+	glEnable(GL_DEPTH_TEST);
+
+	//Shader
+	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
+
+	//Model
+	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
+	//{ "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
+
+				   //C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356 - C2\models\crysis - nano - suit - 2\source
+	Model testModel(testPath);
+
+
+	//Main loop
+	while (!glfwWindowShouldClose(window)) {
+		// per-frame time logic
+	   // --------------------
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		// input
+		// -----
+		processInput(window);
+
+		// render
+		// ------
+		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// don't forget to enable shader before setting uniforms
+		shader.use();
+
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+
+		// render the loaded model
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		shader.setMat4("model", model);
+		testModel.Draw(shader);
+
+
+		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+		// -------------------------------------------------------------------------------
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	std::cout << "Closed Window" << std::endl;
+
+	glfwTerminate();
+
+}
+
 int main()
 {
 	std::cout << "Starting Client!" << std::endl;
-
-	std::cout << "Starting OpenGL" << std::endl;
-	OpenGL();
-
-	_getch();
 
 	//Start winsock
 	InitializeWinsock();
 
 	//Create the socket
-	SOCKET connectSocket = INVALID_SOCKET;
 	CreateSocket(connectSocket);
 
 	//Connect to the server using the socket
@@ -367,8 +387,7 @@ int main()
 
 	//Send a message to the server
 	const char* message = "this is a test";
-	int recvbuflen = DEFAULT_BUFLEN;
-	char recvbuf[DEFAULT_BUFLEN];
+	
 	//SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
 
 	std::string msg = "Object";
@@ -381,16 +400,8 @@ int main()
 	ShutdownOutgoingConnection(connectSocket);
 
 	//Keeps reciving data untill server closes connection
-	ReciveData(connectSocket, recvbuflen, recvbuf);
+	std::thread dataThread(ReciveData);
+
+	std::cout << "Starting OpenGL" << std::endl;
+	MainLoop();
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

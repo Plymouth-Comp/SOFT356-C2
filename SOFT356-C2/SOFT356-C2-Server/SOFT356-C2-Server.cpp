@@ -34,7 +34,7 @@ struct GameObject {
 };
 
 				    //Message   ID,Pos  ,Rotation
-char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180}";
+char stringIdea[] = "{GameObject;1,0,-1.7,0,180,180,180, 0.2, 0.2, 0.2}";
 
 
 
@@ -219,9 +219,6 @@ int main()
 
 		}
 	}
-
-	_getch();
-
 
 	//Start winsock
 	InitializeWinsock();

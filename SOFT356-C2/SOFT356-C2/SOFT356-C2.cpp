@@ -69,6 +69,7 @@ struct addrinfo
 struct GameObject {
 	glm::vec3 position;
 	glm::vec3 rotation;
+	glm::vec3 scale;
 	Model model;
 };
 
@@ -139,6 +140,10 @@ int UpdateGameObject(std::vector<std::string>& values) {
 			gameObjects[objectID].rotation.x = std::stof(values[4].c_str());
 			gameObjects[objectID].rotation.y = std::stof(values[5].c_str());
 			gameObjects[objectID].rotation.z = std::stof(values[6].c_str());
+
+			gameObjects[objectID].scale.x = std::stof(values[7].c_str());
+			gameObjects[objectID].scale.y = std::stof(values[8].c_str());
+			gameObjects[objectID].scale.z = std::stof(values[9].c_str());
 		}
 	}
 	catch (std::exception e) {
@@ -399,6 +404,7 @@ void MainLoop() {
 	GameObject newGameObject = {
 		glm::vec3(0,0,0),
 		glm::vec3(0,0,0),
+		glm::vec3(0,0,0),
 		newModel
 	};
 
@@ -409,6 +415,7 @@ void MainLoop() {
 	Model newModelTwo(modelPathTwo);
 
 	GameObject newGameObjectTwo = {
+		glm::vec3(0,0,0),
 		glm::vec3(0,0,0),
 		glm::vec3(0,0,0),
 		newModelTwo
@@ -459,7 +466,7 @@ void MainLoop() {
 			model = glm::rotate(model, gameObjects[i].rotation.z, glm::vec3(0, 0, 1));
 
 			model = glm::translate(model, gameObjects[i].position); // translate it down so it's at the center of the scene
-			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+			model = glm::scale(model, gameObjects[i].scale);	// it's a bit too big for our scene, so scale it down
 			shader.setMat4("model", model);
 
 			gameObjects[i].model.Draw(shader);

@@ -350,11 +350,10 @@ int ReciveData() {
 	do {
 		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
 		if (iResult > 0) {
-			std::cout << "Bytes received:" << iResult << std::endl;
-			std::cout << "Message: " << recvbuf << std::endl;
-
 			std::vector<std::string> values;
+
 			int messageType = DecodeMessage(recvbuf, values);
+
 			if (messageType == 1) {
 				UpdateGameObject(values);
 			}
@@ -481,6 +480,9 @@ void MainLoop() {
 		glfwPollEvents();
 	}
 
+	//No more data needs to be send so the outgoing connection is stopped
+	ShutdownOutgoingConnection(connectSocket);
+
 	std::cout << "Closed Window" << std::endl;
 
 	glfwTerminate();
@@ -505,9 +507,6 @@ int main()
 	recvbuf[DEFAULT_BUFLEN];
 
 	SendDataToServer(connectSocket, recvbuflen, recvbuf, msg.c_str());
-
-	//No more data needs to be send so the outgoing connection is stopped
-	ShutdownOutgoingConnection(connectSocket);
 
 	std::cout << "Starting OpenGL" << std::endl;
 	MainLoop();

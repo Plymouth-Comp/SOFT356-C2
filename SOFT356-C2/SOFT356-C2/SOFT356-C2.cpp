@@ -59,6 +59,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+bool terminateDataThread = false;
 
 // Declares an object wich contains the sockaddr and initializes the values
 struct addrinfo
@@ -480,13 +481,17 @@ void MainLoop() {
 		glfwPollEvents();
 	}
 
+	
+	
+
 	//No more data needs to be send so the outgoing connection is stopped
 	ShutdownOutgoingConnection(connectSocket);
+
+	dataThread.join();
 
 	std::cout << "Closed Window" << std::endl;
 
 	glfwTerminate();
-
 }
 
 int main()

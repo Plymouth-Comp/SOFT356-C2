@@ -298,6 +298,56 @@ void Input() {
 			editSerialize = SerializeGameObject(*editGameObject);
 			SendToClient(editSerialize);
 			break;
+		case 'r':
+			std::cout << "Editing Object Rotation" << std::endl;
+
+			for (int i = 0; i < 3; i++) {
+				while (!validInput) {
+					std::cout << "Enter Value " << i << std::endl;
+					std::cin >> valueInput;
+
+					try {
+						float value = std::stof(valueInput.c_str());
+						editGameObject->rotation[i] = value;
+						std::cout << "Valid" << std::endl;
+						validInput = true;
+					}
+					catch (std::exception e) {
+						std::cout << "Invalid Value" << std::endl;
+					}
+				}
+				validInput = false;
+			}
+			std::cout << "Position Succesfuly Edited" << std::endl;
+
+			editSerialize = SerializeGameObject(*editGameObject);
+			SendToClient(editSerialize);
+			break;
+		case 's':
+			std::cout << "Editing Object Scale" << std::endl;
+
+			for (int i = 0; i < 3; i++) {
+				while (!validInput) {
+					std::cout << "Enter Value " << i << std::endl;
+					std::cin >> valueInput;
+
+					try {
+						float value = std::stof(valueInput.c_str());
+						editGameObject->scale[i] = value;
+						std::cout << "Valid" << std::endl;
+						validInput = true;
+					}
+					catch (std::exception e) {
+						std::cout << "Invalid Value" << std::endl;
+					}
+				}
+				validInput = false;
+			}
+			std::cout << "Position Succesfuly Edited" << std::endl;
+
+			editSerialize = SerializeGameObject(*editGameObject);
+			SendToClient(editSerialize);
+			break;
 		default:
 			break;
 		}

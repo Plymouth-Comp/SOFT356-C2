@@ -11,6 +11,7 @@
 
 
 #include "stb_image.h"
+#include "Shader.h"
 
 //Assimp
 #include <assimp/Importer.hpp>
@@ -31,7 +32,7 @@ public:
 	{
 		loadModel(path);
 	}
-	void Draw();// Shader shader);
+	void Draw(Shader shader);
 private:
 	/*  Functions   */
 	void loadModel(std::string path);

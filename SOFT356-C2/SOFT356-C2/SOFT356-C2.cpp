@@ -25,18 +25,78 @@
 #include "GL/freeglut.h"
 #include "GLFW/glfw3.h"
 
+//GLM
+#include <glm.hpp> //includes GML
+#include <ext/matrix_transform.hpp> // GLM: translate, rotate
+#include <ext/matrix_clip_space.hpp> // GLM: perspective and ortho 
+#include <gtc/type_ptr.hpp> // GLM: access to the value_ptr
+
 #include "Model.h"
-
-
+#include "Shader.h"
 
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
+
+GLuint program;
 
 // Declares an object wich contains the sockaddr and initializes the values
 struct addrinfo
 	* result = NULL,
 	* ptr = NULL,
 	hints;
+
+
+void manipulateObject(glm::vec3 scale, GLfloat rotation, glm::vec3 position) {
+	//Rotates the object
+	//Model matrix
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, scale);
+	model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::translate(model, position);
+
+	//View matrix
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -15.0f));
+
+	//Projection matrix
+	glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3, 0.1f, 20.0f);
+
+	//Combined matrix
+	glm::mat4 mvp = projection * view * model;
+
+
+	//Adding the Uniform to the shader
+	int mvpLoc = glGetUniformLocation(program, "mvp");
+	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+
+}
+
+
+void display(GLfloat delta, Model &object, GLfloat scale, Shader shader) {
+	static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	glClearBufferfv(GL_COLOR, 0, black);
+	glClear(GL_COLOR_BUFFER_BIT);
+	//Bind textures on corresponding texture units
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+
+	//Move the object
+	manipulateObject(glm::vec3{ scale, scale, scale }, 1.0f * delta, glm::vec3{ 0.0f, -1.0f, 0.0f });
+
+
+	object.Draw(shader);
+
+	/*
+	glBindVertexArray(VAOs[Triangles]);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glDrawElements(GL_TRIANGLES, object.getIndex().size(), GL_UNSIGNED_INT, 0);
+	if (glGetError() != GL_NO_ERROR) {
+		cout << "ERROR!: " << glGetError();
+	}
+	*/
+}
 
 void OpenGL() {
 	glfwInit();
@@ -46,13 +106,38 @@ void OpenGL() {
 	glfwMakeContextCurrent(window);
 	glewInit();
 
+	//Shader
+	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
+
+
+	glUseProgram(program);
+
 	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/TestObj/cube.obj" };
 	Model testModel(testPath);
 
+
+	//Main loop
+	GLfloat objectScale = 1.0f;
+
+	float deltaTime = 0.0f;
+	float lastFrame = 0.0f;
+
 	while (!glfwWindowShouldClose(window)) {
-		//display(delta, *object, objectScale);
+		display(deltaTime, testModel, objectScale, shader);
+
+
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+
+
+
 
 		//Incriment time
 		//delta += 0.1f;

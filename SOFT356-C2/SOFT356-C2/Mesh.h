@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 
+#include "Shader.h"
+
 //OpenGL
 #include "GL/glew.h"
 #include "GL/freeglut.h"
@@ -36,7 +38,7 @@ public:
 	std::vector<Texture> textures;
 	/*  Functions  */
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
-	void Draw();//Shader shader);
+	void Draw(Shader shader);
 
 	/*  Render data  */
 	GLuint VAO, VBO, EBO;

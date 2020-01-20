@@ -66,7 +66,56 @@ struct addrinfo
 	* ptr = NULL,
 	hints;
 
+//Messages
+int DecodeMessage(char* string, std::vector<std::string>& values) {
+	int count = 0;
 
+	//Checks for the start of the message
+	if (string[0] == '{') {
+		count++;
+		//Loops until the end of the string
+		while (string[count] != '}') {
+			std::string messageType;
+
+			//Loops till the end of the message type
+			while (string[count] != ';') {
+				messageType.push_back(string[count]);
+				count++;
+			}
+			count++;
+
+			std::string newValue = "";
+
+			//Loops until the end of the string
+			while (string[count] != '}') {
+				//Loops until the end of each value
+				while (string[count] != ',' && string[count] != '}') {
+					newValue.push_back(string[count]);
+					count++;
+				}
+				//Adds the new value to the list of values
+				values.push_back(newValue);
+
+				//Resets the new vairable
+				newValue = "";
+
+				//Prevents count increasing at the end of the string
+				if (string[count] != '}') {
+					count++;
+				}
+			}
+
+			if (messageType == "GameObject") {
+				return 1;
+			}
+		}
+	}
+
+	//Returns 0 to show an error
+	return 0;
+}
+
+//OpenGL
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -120,6 +169,8 @@ void processInput(GLFWwindow* window)
 }
 
 
+
+//Sockets
 int InitializeWinsock() {
 	WSADATA wsaData;
 	int iResult;
@@ -221,7 +272,7 @@ int SendDataToServer(SOCKET& connectSocket, int recvbuflen, char* recvbuf, const
 	int iResult;
 
 	// Send an initial buffer
-	iResult = send(connectSocket, message, (int)strlen(message), 0);
+	iResult = send(connectSocket, message, DEFAULT_BUFLEN, 0);
 	if (iResult == SOCKET_ERROR) {
 		std::cout << "send failed: " << iResult << std::endl;
 		closesocket(connectSocket);
@@ -250,27 +301,6 @@ int ShutdownOutgoingConnection(SOCKET& connectSocket) {
 	return 0;
 }
 
-int ReciveDataP(SOCKET& connectSocket, int recvbuflen, char* recvbuf) {
-	int iResult;
-
-	// Receive data until the server closes the connection
-	do {
-		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-			std::cout << "Bytes received:" << iResult << std::endl;
-		else if (iResult == 0)
-			std::cout << "Connection closed" << std::endl;
-		else
-			if (WSAGetLastError() == 10054) {
-				std::cout << "Server closed the connection" << std::endl;
-			}
-			else {
-				std::cout << "recv failed: " << WSAGetLastError() << std::endl;
-			}
-	} while (iResult > 0);
-
-	return 0;
-}
 
 int ReciveData() {
 	int iResult;
@@ -278,17 +308,27 @@ int ReciveData() {
 	// Receive data until the server closes the connection
 	do {
 		iResult = recv(connectSocket, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
+		if (iResult > 0) {
 			std::cout << "Bytes received:" << iResult << std::endl;
-		else if (iResult == 0)
+			std::cout << "Message: " << recvbuf << std::endl;
+
+			std::vector<std::string> values;
+			int messageType = DecodeMessage(recvbuf, values);
+			if (messageType == 1) {
+
+			}
+		}
+		else if (iResult == 0) {
 			std::cout << "Connection closed" << std::endl;
-		else
+		}
+		else {
 			if (WSAGetLastError() == 10054) {
 				std::cout << "Server closed the connection" << std::endl;
 			}
 			else {
 				std::cout << "recv failed: " << WSAGetLastError() << std::endl;
 			}
+		}
 	} while (iResult > 0);
 
 	return 0;
@@ -391,8 +431,8 @@ int main()
 	//SendDataToServer(connectSocket, recvbuflen, recvbuf, message);
 
 	std::string msg = "Object";
-	recvbuflen = sizeof(msg);
-	recvbuf[sizeof(msg)];
+	recvbuflen = DEFAULT_BUFLEN;
+	recvbuf[DEFAULT_BUFLEN];
 
 	SendDataToServer(connectSocket, recvbuflen, recvbuf, msg.c_str());
 

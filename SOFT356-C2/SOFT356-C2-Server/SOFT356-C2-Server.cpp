@@ -260,7 +260,9 @@ int main()
 			std::cout << "Message: " << recvbuf << std::endl;
 
 			// Echo the buffer back to the sender
-			iSendResult = send(clientSocket, recvbuf, iResult, 0);
+			//  iResult = send(connectSocket, message, (int)strlen(message), 0);
+			//iSendResult = send(clientSocket, recvbuf, iResult, 0);
+			iSendResult = send(clientSocket, stringIdea, iResult, 0);
 			if (iSendResult == SOCKET_ERROR) {
 				std::cout << "send failed: " << WSAGetLastError() << std::endl;
 				closesocket(clientSocket);

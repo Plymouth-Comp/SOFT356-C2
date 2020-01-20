@@ -53,6 +53,8 @@ GameObject objectTwo{
 };
 
 
+SOCKET clientSocket = INVALID_SOCKET;
+
 bool terminateInput = false;
 
 //Converts the message from an object into a char string
@@ -288,6 +290,22 @@ void Input() {
 	
 }
 
+
+int SendToClient(char* message) {
+	int iSendResult, iResult;
+
+	//Send First Object
+	iSendResult = send(clientSocket, message, DEFAULT_BUFLEN, 0);
+	if (iSendResult == SOCKET_ERROR) {
+		std::cout << "send failed: " << WSAGetLastError() << std::endl;
+		closesocket(clientSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	return 0;
+}
+
 int main()
 {
 	std::cout << "Starting Server!" << std::endl;
@@ -307,7 +325,7 @@ int main()
 	ListenOnSocket(listenSocket);
 
 	// Accept a client socket
-	SOCKET clientSocket = INVALID_SOCKET;
+
 	AcceptConnection(listenSocket, clientSocket);
 
 
@@ -327,31 +345,14 @@ int main()
 		if (iResult > 0) {
 			std::cout << "Bytes received: " << std::endl;
 
-			std::cout << "Message: " << recvbuf << std::endl;
-
 			// Echo the buffer back to the sender
 
 			char* objectOneSerialized = SerializeGameObject(objectOne);
-
-			//Send First Object
-			iSendResult = send(clientSocket, objectOneSerialized, iResult, 0);
-			if (iSendResult == SOCKET_ERROR) {
-				std::cout << "send failed: " << WSAGetLastError() << std::endl;
-				closesocket(clientSocket);
-				WSACleanup();
-				//return 1;
-			}
+			SendToClient(objectOneSerialized);
+		
 
 			char* objectTwoSerialized = SerializeGameObject(objectTwo);
-
-			//Send Second Object
-			iSendResult = send(clientSocket, objectTwoSerialized, iResult, 0);
-			if (iSendResult == SOCKET_ERROR) {
-				std::cout << "send failed: " << WSAGetLastError() << std::endl;
-				closesocket(clientSocket);
-				WSACleanup();
-				//return 1;
-			}
+			SendToClient(objectTwoSerialized);
 
 			std::cout << "Bytes sent: " << std::endl;
 		}

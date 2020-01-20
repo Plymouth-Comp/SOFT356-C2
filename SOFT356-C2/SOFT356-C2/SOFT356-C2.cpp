@@ -66,6 +66,12 @@ struct addrinfo
 	* ptr = NULL,
 	hints;
 
+struct GameObject {
+	glm::vec3 position;
+	glm::vec3 rotation;
+	Model model;
+};
+
 //Messages
 int DecodeMessage(char* string, std::vector<std::string>& values) {
 	int count = 0;
@@ -112,6 +118,10 @@ int DecodeMessage(char* string, std::vector<std::string>& values) {
 	}
 
 	//Returns 0 to show an error
+	return 0;
+}
+
+int UpdateGameObjecT() {
 	return 0;
 }
 
@@ -357,12 +367,34 @@ void MainLoop() {
 	//Shader
 	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
 
-	//Model
-	char testPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
-	//{ "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
 
-				   //C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356 - C2\models\crysis - nano - suit - 2\source
-	Model testModel(testPath);
+	//Stores all gameobject
+	std::vector<GameObject> gameObjects;
+
+	//Model
+	char modelPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
+	Model newModel(modelPath);
+
+	//Adds the first test object
+	GameObject newGameObject = {
+		glm::vec3(0,0,0),
+		glm::vec3(0,0,0),
+		newModel
+	};
+
+	gameObjects.push_back(newGameObject);
+
+	//Adds the second test object
+	char modelPathTwo[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
+	Model newModelTwo(modelPathTwo);
+
+	GameObject newGameObjectTwo = {
+		glm::vec3(0,0,0),
+		glm::vec3(0,0,0),
+		newModelTwo
+	};
+	
+	gameObjects.push_back(newGameObjectTwo);
 
 
 	//Main loop
@@ -397,7 +429,12 @@ void MainLoop() {
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 		shader.setMat4("model", model);
-		testModel.Draw(shader);
+
+		//Draws all models
+		for (int i = 0; i < gameObjects.size(); i++) {
+			gameObjects[i].model.Draw(shader);
+		}
+		
 
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

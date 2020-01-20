@@ -17,6 +17,7 @@
 #include <conio.h>
 #include <vector>
 #include <thread>
+#include <filesystem>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -38,7 +39,6 @@
 
 //Links the building enviroment to the libary
 #pragma comment(lib, "Ws2_32.lib")
-
 
 //Socket
 SOCKET connectSocket = INVALID_SOCKET;
@@ -75,6 +75,7 @@ struct GameObject {
 };
 
 std::vector<GameObject> gameObjects;
+namespace fs = std::filesystem;
 
 //Messages
 int DecodeMessage(char* string, std::vector<std::string>& values) {
@@ -399,7 +400,14 @@ void MainLoop() {
 	Shader shader("shaders/mesh.vert", "shaders/mesh.frag");
 
 	//Model
-	char modelPath[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" };
+	std::string absolutePath = fs::current_path().string() + "/models/Lamborginhi Aventador OBJ/Lamborghini_Aventador.obj" ;
+
+	char* modelPath = new char[absolutePath.length() + 1];
+	for (int i = 0; i < absolutePath.length(); i++) {
+		modelPath[i] = absolutePath[i];
+	}
+	modelPath[absolutePath.length()] = '\0';
+
 	Model newModel(modelPath);
 
 	//Adds the first test object
@@ -412,9 +420,18 @@ void MainLoop() {
 
 	gameObjects.push_back(newGameObject);
 
+
+	//Model
+	absolutePath = fs::current_path().string() + "/models/47-obj/obj/Handgun_obj.obj";
+
+	modelPath = new char[absolutePath.length() + 1];
+	for (int i = 0; i < absolutePath.length(); i++) {
+		modelPath[i] = absolutePath[i];
+	}
+	modelPath[absolutePath.length()] = '\0';
+
 	//Adds the second test object
-	char modelPathTwo[] = { "C:/Store/Repo/SOFT356-C2/SOFT356-C2/SOFT356-C2/models/47-obj/obj/Handgun_obj.obj" };
-	Model newModelTwo(modelPathTwo);
+	Model newModelTwo(modelPath);
 
 	GameObject newGameObjectTwo = {
 		glm::vec3(0,0,0),

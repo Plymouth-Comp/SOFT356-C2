@@ -57,6 +57,22 @@ SOCKET clientSocket = INVALID_SOCKET;
 
 bool terminateInput = false;
 
+
+int SendToClient(char* message) {
+	int iSendResult, iResult;
+
+	//Send First Object
+	iSendResult = send(clientSocket, message, DEFAULT_BUFLEN, 0);
+	if (iSendResult == SOCKET_ERROR) {
+		std::cout << "send failed: " << WSAGetLastError() << std::endl;
+		closesocket(clientSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	return 0;
+}
+
 //Converts the message from an object into a char string
 char* SerializeGameObject(GameObject object) {
 	
@@ -239,10 +255,9 @@ int AcceptConnection(SOCKET& listenSocket, SOCKET& clientSocket) {
 
 void Input() {
 	GameObject* editGameObject = &objectOne;
-
 	std::string valueInput;
-
 	bool validInput = false;
+	char* editSerialize = nullptr;
 
 	//Loops until the terminate bool is fliped
 	while (!terminateInput) {
@@ -279,31 +294,20 @@ void Input() {
 				validInput = false;
 			}
 			std::cout << "Position Succesfuly Edited" << std::endl;
+
+			editSerialize = SerializeGameObject(*editGameObject);
+			SendToClient(editSerialize);
 			break;
 		default:
 			break;
 		}
 
-		std::cout << "1 Pos: " << objectOne.position.x << ", " << objectOne.position.y << ", " << objectOne.position.z << std::endl;
+		std::cout << "Position: " << editGameObject->position.x << ", " << editGameObject->position.y << ", " << editGameObject->position.z << std::endl;
+		std::cout << "Rotation: " << editGameObject->rotation.x << ", " << editGameObject->rotation.y << ", " << editGameObject->rotation.z << std::endl;
+		std::cout << "Scale: " << editGameObject->scale.x << ", " << editGameObject->scale.y << ", " << editGameObject->scale.z << std::endl;
 	}
 
 	
-}
-
-
-int SendToClient(char* message) {
-	int iSendResult, iResult;
-
-	//Send First Object
-	iSendResult = send(clientSocket, message, DEFAULT_BUFLEN, 0);
-	if (iSendResult == SOCKET_ERROR) {
-		std::cout << "send failed: " << WSAGetLastError() << std::endl;
-		closesocket(clientSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	return 0;
 }
 
 int main()

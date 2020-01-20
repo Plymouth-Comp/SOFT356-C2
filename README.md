@@ -1,25 +1,30 @@
 # SOFT356 Interactive Network
-
 ## How to Use
-
-The project is split into 2 parts, the client and the server.
-
+The project is split into 2 parts, the client and the server. 
 ### The Client
-
 The client displays 2 models using information given by the server.
-
 Using the client, the user connects the server that is running either on the local machine or another networked system running the server.
-
 Once the client is loaded the user is prompted to use the default IP which will attempt to connect to the server running on the local machine. Selecting a custom IP allows to the client connect to a networked machine with the given IP running the server.
-
 If the client successfully connects to the server then the a message will be sent to the server which will reply with the initial position, rotation and scale of the 2 models. With the initial model information, the client will draw the models at the correct area.
-
 The user is able to navigate around the models using ‘WASD’ keys to move the camera Forward, Left, Down and Right respectively. Moving the mouse will allow the user to turn the camera and using the scroll wheel will zoom the camera in and out. Pressing 'ESC' will close the OpenGL window and terminate the client.
-
 ### The Server
-
-If the server is not run on the local machine or on the local network then machine hosting the server will need to have its IP port forwarded which will be different depending on the router which can be found at [https://portforward.com/](https://portforward.com/). Once the hosting machine is port forwarded the client will need to connect using the hosts external IP which can be found at [https://www.yougetsignal.com/tools/open-ports/](https://www.yougetsignal.com/tools/open-ports/).
-
+If the server is not run on the local machine or on the local network then machine hosting the server will need to have its IP port forwarded which will be different depending on the router which can be found at https://portforward.com/ using port “27015”. Once the hosting machine is port forwarded the client will need to connect using the hosts external IP which can be found at https://www.yougetsignal.com/tools/open-ports/.
 To start the server the user need to run the exe which will start the server listening for a client to connect. Only one client can connect to a server at a time and once the connection has been closed the server will need to be restarted.
-
 Once a client has connected to the server the game objects can be changed. To change a game object the object to be edited needs to be chosen, to do this press ’1' or '2' to select which object to edit (object 1 is the car, object 2 is the gun). Selecting an object will show you its current properties. Once an object has been selected, pressing 'P', 'R' or 'S' will edit the Position, Rotation and scale respectively. Selecting to edit a property will prompt the user for three values (x, y, z) separated by the user pressing the enter key. The values must be a number otherwise the server will reject the input and will not allow anything else to be changed until three valid inputs are entered. Once all three inputs have been correctly entered the updated game object is sent to the connected client.
+## How it works
+### Winsock
+To connect to each other both the client and server us the Winsock(https://docs.microsoft.com/en-us/windows/win32/winsock/using-winsock) library. Winsock allows the two programs to communicate with each other through sockets. 
+The client creates a socket using the IP (this can be IPv4 or IPv6) it has gathered from the user where it will resolve the IP address and then attempt to connect to it. Once the client has connected to the server a new thread is created with the task of listing to anything the server sends and updating the correct game objects.
+The server also creates a socket; however, this socket is used to listen for the client which it can do once the socket has been bound. Once the socket is bound the server listens for a client to connect to the server. When the client has connected the server listens for a message to be sent which it will then respond with the initial information of the game objects. Once the initial message has been received a new thread is started which will get input from the server console and send updated game object to the client.
+### Client Models
+To load the models AssImp (http://www.assimp.org/) was used as it is a much more complete model loader than my model load and would allow for multiple models to be loaded at once. To set up for AssImp several classes have been created to store the information loaded from the model files. 
+The mesh class stores the basic model information such as the vertexes, normal and texture cords. The mesh also stores the code necessary for setting binding and enabling the correct array objects when it is needed to be rendered.
+To store more complex models a model class was created which stores a list of meshes. The model class is responsible for loading and storing the files. This model class will also initialize the meshes it has stored and call them when they need to be rendered.
+The shader class is handles the shaders used to render the models in the and passing the information to the vertex and fragment shader files.
+The camera class stores the information of the camera in the world space and the code allowing it to move around the world space.
+Each model is stored in a GameObject struct which contains the Objects position, rotation and scale in the world along with the model itself. When the client receives a message from the server containing game object data the client desterilizes the message and converts it into the GameObject struct. Before any models are loaded GLM is used to adjust the position, rotation and scale of the models which is taken from the GameObject struct.
+### Sending Game Object Data
+To send game object information the properties of the games object have to be converted into a character array. To do this a string is created starting and ending with ‘{‘ and ‘}’ to determine the type of message anything after the ‘{‘ and before ‘;’ describes the message type. 
+For a game object any characters after the ‘;’ are values, each value is separated by a ‘,’ or ended with a ‘}’. Game object values are in an order so they can be read (Object ID, Position x, Position y, Position z, Rotation x, Rotation y, Rotation z, Scale x, Scale y, Scale z). Combined a message looks like this “{GameObject;0,2,2,2,3,3,3,4,4,4}”
+### Changing Game Object Data
+Game object data is changed on the sever. To do this the server has a separate thread which waits for a user to enter an input, if the input is a valid (1, 2, P, R, S) the users be able to adjust the game object which is stored on the server, once the object has been updated the server will sterilize the message and send it to the client. Once the message has been sent the thread will wait for a new input.

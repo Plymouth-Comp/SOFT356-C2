@@ -399,7 +399,7 @@ int main()
 		if (iResult > 0) {
 			std::cout << "Bytes received: " << std::endl;
 
-			// Echo the buffer back to the sender
+			// Respond to the client with game objects
 
 			char* objectOneSerialized = SerializeGameObject(objectOne);
 			SendToClient(objectOneSerialized);
